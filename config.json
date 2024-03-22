@@ -1,0 +1,11 @@
+{
+    "mqttClient": {
+        "url": "mqtt.eclipseprojects.io",
+        "port": 8443
+    },
+
+    "http": {
+        "url": "127.0.0.1",
+        "port": 8080
+    }
+}
