@@ -1,10 +1,10 @@
 import json
 from typing import Any, Dict
-from logging import info
+from logging import info, debug, warning, error
 
 CONFIG_FILE = 'config.json'
 
-# TODO global config file
+# TODO dynamic global config file
 jsonConfig: Dict[str, Any] = {
     "mqttClient": {
         "url": "mqtt.eclipseprojects.io",
