@@ -1,8 +1,7 @@
-from ports.inputPort import InputPort
-from ports.outputPort import OutputPort
-from connectors.mqttClientConnector import MqttClientConnector
-from connectors.httpConnector import HttpConnector
-from gateway.message import *
+from src.ports import InputPort, OutputPort
+from src.connectors import *
+from src.gateway.message import *
+import src.config as config 
 from logging import info, debug, warning, error
 
 class Gateway():
@@ -10,12 +9,20 @@ class Gateway():
         self.leftPort = leftPort
         self.rightPort = rightPort
 
-        callbacks = [self.onReceivedMessage, self.onRequestMessage]
-        self.leftPort.setConnector(MqttClientConnector(callbacks, SideType.LEFTSIDE))
-        self.rightPort.setConnector(HttpConnector(callbacks, SideType.RIGHTSIDE))
+        self.leftPort.setOtherSide(self.rightPort)
+        self.rightPort.setOtherSide(self.leftPort)
 
-    def onReceivedMessage(self, message: Message):
-        debug(f"onReceivedMessage: {message}")
+        debug(f"Created gateway")
+        self.callbacksLeft = [self.leftPort.onReceivedMessage, self.leftPort.onRequestMessage]
+        self.callbacksRight = [self.rightPort.onReceivedMessage, self.rightPort.onRequestMessage]
 
-    def onRequestMessage(self, message: Message) -> Message:
-        debug(f"onRequestMessage: {message}")
+    def setConnector(self, side: SideType, connector: Connector):
+        if side == SideType.LEFTSIDE:
+            self.leftPort.setConnector(connector(self.callbacksLeft, side))
+            debug("Leftside connector initialized")
+        elif side == SideType.RIGHTSIDE:
+            self.rightPort.setConnector(connector(self.callbacksRight, side))
+            debug("Rightside connector initialized")
+        else:
+            raise Exception("Invalid side. Can only be right or left")
+

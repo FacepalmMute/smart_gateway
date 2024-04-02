@@ -1,32 +1,31 @@
-from connectors.connector import *
-from gateway.message import Message
+from src.connectors.connector import *
+from src.gateway.message import Message
 import tornado
-import asyncio
-import config
+import src.config as config
+from threading import Thread
 
 class HttpConnector(Connector):
     def __init__(self, callbacks: List[Callable[[Message], Optional[Message]]], side: SideType) -> None:
         super().__init__(callbacks, side)
         self.handler = RequestHandler
 
-    async def requestHandler(self) -> None:
+    def requestHandler(self) -> None:
         self.server = tornado.web.Application([(r'/(.*)', RequestHandler, dict(httpConnector=self))])
         self.server.listen(config.jsonConfig["http"]["port"])
-        await asyncio.Event().wait()
-
-    # def onReceiveMessage(self, message: Message):
-    #     info(f"{__name__} parsed message to {message}")
-
-    # def onRequestMessage(self, message: Message):
-    #     return super().onRequestMessage(message)
+        tornado.ioloop.IOLoop.current().start()
 
     def convertToMessage(self, payload: bytes, address: bytes) -> Message:
         super().convertToMessage(payload, address)
-        return Message(payload, Source(f'{config.jsonConfig["http"]["url"]}:{config.jsonConfig["http"]["port"]}'), Destination(address), self.side)
+        return Message(payload, Source(f'{config.jsonConfig["http"]["url"]}:{config.jsonConfig["http"]["port"]}'), Destination(address), self.side, ProtocolType.HTTP)
 
     def start(self):
         super().start()
-        asyncio.run(self.requestHandler())
+        self.thread = Thread(target=self.requestHandler)
+        self.thread.daemon = True  # For clearer quit
+        self.thread.start()
+
+    def requestMessage(self, address: str) -> Message | None:
+        pass
 
 class RequestHandler(tornado.web.RequestHandler):
     def initialize(self, httpConnector: HttpConnector):
@@ -34,5 +33,5 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def get(self, url):
         message = self.httpConnector.convertToMessage("", url)
-        self.httpConnector.onRequestMessage(message)  # Hier rufst du onReceiveMessage auf
-        self.write("Hello, world")
+        message = self.httpConnector.onRequestMessage(message)  # Hier rufst du onReceiveMessage auf
+        self.write(message.data)

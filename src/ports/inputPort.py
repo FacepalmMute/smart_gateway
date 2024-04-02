@@ -1,5 +1,4 @@
-from ports.port import Port
-from connectors.connector import Connector
+from .port import Port
 
 class InputPort(Port):
     def __init__(self) -> None:

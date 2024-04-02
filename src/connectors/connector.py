@@ -1,8 +1,7 @@
-from gateway.message import *
+from src.gateway.message import *
 from logging import info, debug, warning, error
 from abc import ABC, abstractmethod
 from typing import List, Callable, Optional
-from gateway.message import Destination, Message, Source, SideType
 
 NUMBER_OF_CALLBACKS = 2
 
@@ -20,6 +19,10 @@ class Connector(ABC):
     # @abstractmethod
     # def onRequestMessage(self, message: Message):
     #     raise Exception("Not supported for this connector")
+
+    @abstractmethod
+    def requestMessage(self, address: str) -> Message | None:
+        pass
 
     @abstractmethod
     def convertToMessage(self, payload: bytes, address: bytes) -> Message:

@@ -2,12 +2,10 @@ import json
 from typing import Any, Dict
 from logging import info, debug, warning, error
 
-CONFIG_FILE = 'config.json'
-
 # TODO dynamic global config file
 jsonConfig: Dict[str, Any] = {
     "mqttClient": {
-        "url": "mqtt.eclipseprojects.io",
+        "url": "127.0.0.1",
         "port": 1883
     },
 
@@ -17,15 +15,17 @@ jsonConfig: Dict[str, Any] = {
     }
 }
 
-def readConfig() -> Dict[str, Any]:
-    with open(CONFIG_FILE) as f:
-        return json.load(f)
+# CONFIG_FILE = 'config.json'
 
-def writeConfig(config: Dict[str, Any]) -> None:
-    with open(CONFIG_FILE, 'w') as f:
-        json.dump(config, f)
+# def readConfig() -> Dict[str, Any]:
+#     with open(CONFIG_FILE) as f:
+#         return json.load(f)
 
-def loadConfig():
-    jsonConfig = readConfig()
-    globals().update(jsonConfig)
-    info(f"Loaded config in {CONFIG_FILE}: {jsonConfig}")
+# def writeConfig(config: Dict[str, Any]) -> None:
+#     with open(CONFIG_FILE, 'w') as f:
+#         json.dump(config, f)
+
+# def loadConfig():
+#     jsonConfig = readConfig()
+#     globals().update(jsonConfig)
+#     info(f"Loaded config in {CONFIG_FILE}: {jsonConfig}")
